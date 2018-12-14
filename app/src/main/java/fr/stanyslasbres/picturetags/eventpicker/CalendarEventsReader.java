@@ -47,37 +47,20 @@ public class CalendarEventsReader {
 
     /**
      * Retrieve a cursor with all the events for a day.
-     * @param year Year
-     * @param month Month
-     * @param day Day of month
+     * @param cal Calendar with the day to use
      * @return Cursor with the events or null if the permission is not granted
      */
-    public Cursor readEventsForDay(int year, int month, int day) {
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.YEAR, year);
-        cal.set(Calendar.MONTH, month);
-        cal.set(Calendar.DAY_OF_MONTH, day);
-        cal.set(Calendar.HOUR, 0);
-        cal.set(Calendar.MINUTE, 0);
-        return readEventsForDay(cal.getTimeInMillis());
-    }
-
-    /**
-     * Retrieve a cursor with all the events for a day.
-     * @param timestamp Timestamp
-     * @return Cursor with the events or null if the permission is not granted
-     */
-    public Cursor readEventsForDay(long timestamp) {
+    public Cursor readEventsForDay(Calendar cal) {
         if (!(ContextCompat.checkSelfPermission(context,  Manifest.permission.READ_CALENDAR)  == PackageManager.PERMISSION_GRANTED)) {
             return null;
         }
 
-        Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(timestamp);
+        cal.set(Calendar.HOUR, 0);
+        cal.set(Calendar.MINUTE, 0);
 
-        String dayStart = String.valueOf(c.getTimeInMillis());
-        c.add(Calendar.DATE,1);
-        String dayEnd = String.valueOf(c.getTimeInMillis());
+        String dayStart = String.valueOf(cal.getTimeInMillis());
+        cal.add(Calendar.DATE,1);
+        String dayEnd = String.valueOf(cal.getTimeInMillis());
 
         // query all the events for the day
         String queryString = String.format("%s < ? AND %s > ?", CalendarContract.Events.DTSTART, CalendarContract.Events.DTEND);

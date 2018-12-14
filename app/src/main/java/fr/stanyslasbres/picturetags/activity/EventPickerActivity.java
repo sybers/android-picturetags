@@ -11,6 +11,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.widget.CalendarView;
 
+import java.util.Calendar;
+
 import fr.stanyslasbres.picturetags.R;
 import fr.stanyslasbres.picturetags.eventpicker.CalendarEventsReader;
 import fr.stanyslasbres.picturetags.eventpicker.EventsAdapter;
@@ -19,7 +21,9 @@ import fr.stanyslasbres.picturetags.eventpicker.EventsAdapter;
  * Allows to pick an event from the calendar and returns the information about it
  */
 public class EventPickerActivity extends AppCompatActivity {
-    private static final int PERMISSION_REQUEST_READ_CALENDAR = 1 ;
+    public static final String EXTRA_SELECTED_EVENT_ID = "fr.stanyslasbres.picturetags.SELECTED_EVENT_ID";
+
+    private static final int PERMISSION_REQUEST_READ_CALENDAR = 1;
     private EventsAdapter adapter;
     private CalendarEventsReader eventsReader;
 
@@ -43,7 +47,9 @@ public class EventPickerActivity extends AppCompatActivity {
         // Attach calendar event to recycler view data update
         calendar = findViewById(R.id.calendarView);
         calendar.setOnDateChangeListener((calendarView, year, month, day) -> {
-            adapter.setData(eventsReader.readEventsForDay(year, month, day));
+            Calendar cal = Calendar.getInstance();
+            cal.set(year, month, day);
+            adapter.setData(eventsReader.readEventsForDay(cal));
         });
 
         int calendarPermissionStatus = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALENDAR);
@@ -67,7 +73,9 @@ public class EventPickerActivity extends AppCompatActivity {
         }
 
         // the permission is available, load the events !
-        adapter.setData(eventsReader.readEventsForDay(calendar.getDate()));
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(calendar.getDate());
+        adapter.setData(eventsReader.readEventsForDay(cal));
     }
 
 
@@ -79,7 +87,9 @@ public class EventPickerActivity extends AppCompatActivity {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
-                    adapter.setData(eventsReader.readEventsForDay(calendar.getDate()));
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTimeInMillis(calendar.getDate());
+                    adapter.setData(eventsReader.readEventsForDay(cal));
 
                 } else {
                     // permission denied, boo! Disable the
