@@ -1,4 +1,4 @@
-package fr.stanyslasbres.picturetags.eventpicker;
+package fr.stanyslasbres.picturetags.readers;
 
 import android.Manifest;
 import android.content.Context;

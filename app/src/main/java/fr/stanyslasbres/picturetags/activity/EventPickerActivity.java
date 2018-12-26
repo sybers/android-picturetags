@@ -14,8 +14,8 @@ import android.widget.CalendarView;
 import java.util.Calendar;
 
 import fr.stanyslasbres.picturetags.R;
-import fr.stanyslasbres.picturetags.eventpicker.CalendarEventsReader;
-import fr.stanyslasbres.picturetags.eventpicker.EventsAdapter;
+import fr.stanyslasbres.picturetags.readers.CalendarEventsReader;
+import fr.stanyslasbres.picturetags.adapters.EventsAdapter;
 
 /**
  * Allows to pick an event from the calendar and returns the information about it
@@ -32,7 +32,7 @@ public class EventPickerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_event_picker);
+        setContentView(R.layout.activity_pick_event);
 
         // create adapter and eventsReader
         adapter = new EventsAdapter(this);

@@ -1,4 +1,4 @@
-package fr.stanyslasbres.picturetags.eventpicker;
+package fr.stanyslasbres.picturetags.adapters;
 
 import android.app.Activity;
 import android.content.Context;
@@ -19,8 +19,6 @@ import android.widget.TextView;
 import java.text.DateFormat;
 import java.util.Calendar;
 
-import javax.annotation.Nonnull;
-
 import fr.stanyslasbres.picturetags.R;
 import fr.stanyslasbres.picturetags.activity.EventPickerActivity;
 
@@ -39,14 +37,14 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
         private final TextView end;
         private final GradientDrawable background;
 
-        EventViewHolder(@Nonnull View view) {
+        EventViewHolder(@NonNull View view) {
             super(view);
             view.setOnClickListener(this);
 
             title = view.findViewById(R.id.event_title);
             start = view.findViewById(R.id.event_start);
             end = view.findViewById(R.id.event_end);
-            background = (GradientDrawable) ContextCompat.getDrawable(context, R.drawable.eventitem_background);
+            background = (GradientDrawable) ContextCompat.getDrawable(context, R.drawable.adapter_item_event_bg);
         }
 
         @Override
@@ -60,9 +58,11 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
             notifyItemChanged(selectedItemPosition);
 
             data.moveToPosition(getAdapterPosition());
+
             // TODO : dirty way to access the activity from adapter...
             Intent resultIntent = new Intent();
             resultIntent.putExtra(EventPickerActivity.EXTRA_SELECTED_EVENT_ID, data.getLong(data.getColumnIndex(CalendarContract.Events._ID)));
+
             if(context instanceof Activity) {
                 ((Activity) context).setResult(Activity.RESULT_OK, resultIntent);
                 ((Activity) context).finish();
@@ -102,7 +102,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new EventViewHolder(
-                LayoutInflater.from(context).inflate(R.layout.event_item, parent, false)
+                LayoutInflater.from(context).inflate(R.layout.adapter_item_event, parent, false)
         );
     }
 
