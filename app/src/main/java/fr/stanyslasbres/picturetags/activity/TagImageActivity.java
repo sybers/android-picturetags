@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import com.github.clans.fab.FloatingActionButton;
+import com.squareup.picasso.Picasso;
 
 import fr.stanyslasbres.picturetags.AsyncTaskResponseListener;
 import fr.stanyslasbres.picturetags.PictureTagsApplication;
@@ -31,7 +32,13 @@ public final class TagImageActivity extends AppCompatActivity {
         String imageUriString = getIntent().getStringExtra(PicturesListActivity.EXTRA_IMAGE_URI);
 
         ImageView annotatedPictureImageView = findViewById(R.id.annotated_image_view);
-        annotatedPictureImageView.setImageURI(Uri.parse(imageUriString));
+
+        // load image with picasso
+        Picasso.get()
+                .load(Uri.parse(imageUriString))
+                .fit()
+                .centerCrop()
+                .into(annotatedPictureImageView);
 
         // change scale type on image click (to view the full image)
         annotatedPictureImageView.setOnClickListener(view -> {
@@ -40,6 +47,7 @@ public final class TagImageActivity extends AppCompatActivity {
                     : ImageView.ScaleType.CENTER_CROP);
         });
 
+        // save button
         Button saveButton = findViewById(R.id.annotated_image_save_button);
         saveButton.setOnClickListener(view -> {
             Picture pic = new Picture(Uri.parse(imageUriString));
@@ -50,9 +58,15 @@ public final class TagImageActivity extends AppCompatActivity {
             finish();
         });
 
+        // cancel button
+        Button cancelButton = findViewById(R.id.annotated_image_cancel_button);
+        cancelButton.setOnClickListener(view -> showCancelConfirmDialog());
+
+        // pick event FAB
         FloatingActionButton fabPickEvent = findViewById(R.id.fab_pick_event);
         fabPickEvent.setOnClickListener(view -> pickEvent());
 
+        // pick contact FAB
         FloatingActionButton fabPickContact = findViewById(R.id.fab_pick_contact);
         fabPickContact.setOnClickListener(view -> pickContact());
     }
@@ -114,6 +128,24 @@ public final class TagImageActivity extends AppCompatActivity {
                 new AlertDialog.Builder(this).setTitle("RESULT").setMessage("" + id).show();
             }
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        showCancelConfirmDialog();
+    }
+
+    private void showCancelConfirmDialog() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        alert
+                .setTitle("Wait a minute!")
+                .setMessage("The annotations are not yet saved! are you sure you want to cancel?")
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton("Yes", (dialog, which) -> finish())
+                .setNegativeButton("No", (dialog, which) -> dialog.cancel());
+
+        alert.show();
     }
 
     /**

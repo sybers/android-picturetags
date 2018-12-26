@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.List;
 
 import fr.stanyslasbres.picturetags.R;
@@ -61,8 +63,12 @@ public class PicturesAdapter extends RecyclerView.Adapter<PicturesAdapter.Pictur
     public void onBindViewHolder(@NonNull PictureViewHolder holder, int position) {
         if (data != null) {
             Uri imageUri = data.get(position).uri;
-            holder.imageView.setImageURI(null);
-            holder.imageView.setImageURI(imageUri);
+
+            Picasso.get()
+                    .load(imageUri)
+                    .fit()
+                    .centerCrop()
+                    .into(holder.imageView);
         }
     }
 
