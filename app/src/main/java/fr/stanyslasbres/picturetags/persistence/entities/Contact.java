@@ -1,21 +1,25 @@
 package fr.stanyslasbres.picturetags.persistence.entities;
 
 import android.arch.persistence.room.*;
+import android.net.Uri;
+import android.support.annotation.NonNull;
 
-@Entity(tableName = "contacts")
+import static android.arch.persistence.room.ForeignKey.CASCADE;
+
+@Entity(
+        tableName = "contacts",
+        foreignKeys = @ForeignKey(entity = Picture.class, parentColumns = "uri", childColumns = "pictureUri", onDelete = CASCADE)
+)
 public class Contact {
 
-    @PrimaryKey(autoGenerate = true)
-    public int id;
+    @PrimaryKey
+    @NonNull
+    public final Uri uri;
 
-    @ColumnInfo(name = "first_name")
-    public String firstName;
+    public final Uri pictureUri;
 
-    @ColumnInfo(name = "last_name")
-    public String lastName;
-
-    public Contact(String firstName, String lastName) {
-        this.firstName = firstName;
-        this.lastName = lastName;
+    public Contact(@NonNull final Uri uri, @NonNull final Uri pictureUri) {
+        this.uri = uri;
+        this.pictureUri = pictureUri;
     }
 }

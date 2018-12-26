@@ -1,7 +1,7 @@
 package fr.stanyslasbres.picturetags.adapters;
 
 import android.content.Context;
-import android.database.Cursor;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -42,8 +42,8 @@ public class PicturesAdapter extends RecyclerView.Adapter<PicturesAdapter.Pictur
     }
 
     /**
-     * Get the {@link Cursor} data object
-     * @return Cursor data
+     * Get the {@link List<Picture>} data object
+     * @return Current data
      */
     public List<Picture> getData() {
         return this.data;
@@ -60,12 +60,17 @@ public class PicturesAdapter extends RecyclerView.Adapter<PicturesAdapter.Pictur
     @Override
     public void onBindViewHolder(@NonNull PictureViewHolder holder, int position) {
         if (data != null) {
-            holder.imageView.setImageURI(data.get(position).uri);
+            Uri imageUri = data.get(position).uri;
+            holder.imageView.setImageURI(null);
+            holder.imageView.setImageURI(imageUri);
         }
     }
 
     @Override
     public int getItemCount() {
+        if(data == null) {
+            return 0;
+        }
         return data.size();
     }
 }

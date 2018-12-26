@@ -32,7 +32,9 @@ public class PictureTagsApplication extends Application {
                     getApplication().getApplicationContext(),
                     AppDatabase.class,
                     "picture-tags"
-            ).build();
+            )
+                    .fallbackToDestructiveMigration()
+                    .build();
         }
 
         return databaseInstance;

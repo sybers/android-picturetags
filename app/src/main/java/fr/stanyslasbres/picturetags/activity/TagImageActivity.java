@@ -2,14 +2,22 @@ package fr.stanyslasbres.picturetags.activity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.Button;
+import android.widget.ImageView;
 
 import com.github.clans.fab.FloatingActionButton;
 
+import fr.stanyslasbres.picturetags.AsyncTaskResponseListener;
+import fr.stanyslasbres.picturetags.PictureTagsApplication;
 import fr.stanyslasbres.picturetags.R;
+import fr.stanyslasbres.picturetags.persistence.dao.PicturesDao;
+import fr.stanyslasbres.picturetags.persistence.entities.Picture;
 
 public final class TagImageActivity extends AppCompatActivity {
     private static final int PICK_EVENT = 0;
@@ -19,6 +27,28 @@ public final class TagImageActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tag_image);
+
+        String imageUriString = getIntent().getStringExtra(PicturesListActivity.EXTRA_IMAGE_URI);
+
+        ImageView annotatedPictureImageView = findViewById(R.id.annotated_image_view);
+        annotatedPictureImageView.setImageURI(Uri.parse(imageUriString));
+
+        // change scale type on image click (to view the full image)
+        annotatedPictureImageView.setOnClickListener(view -> {
+            annotatedPictureImageView.setScaleType(annotatedPictureImageView.getScaleType() == ImageView.ScaleType.CENTER_CROP
+                    ? ImageView.ScaleType.CENTER_INSIDE
+                    : ImageView.ScaleType.CENTER_CROP);
+        });
+
+        Button saveButton = findViewById(R.id.annotated_image_save_button);
+        saveButton.setOnClickListener(view -> {
+            Picture pic = new Picture(Uri.parse(imageUriString));
+
+            SaveImageTask task = new SaveImageTask();
+            task.execute(pic);
+
+            finish();
+        });
 
         FloatingActionButton fabPickEvent = findViewById(R.id.fab_pick_event);
         fabPickEvent.setOnClickListener(view -> pickEvent());
@@ -78,6 +108,45 @@ public final class TagImageActivity extends AppCompatActivity {
      * @param data Intent with extra data for the event
      */
     private void onContactPicked(int resultCode, Intent data) {
-        // TODO : handle contact selection...
+        if(resultCode == Activity.RESULT_OK) {
+            if(data != null) {
+                long id = data.getLongExtra(EventPickerActivity.EXTRA_SELECTED_EVENT_ID, -1);
+                new AlertDialog.Builder(this).setTitle("RESULT").setMessage("" + id).show();
+            }
+        }
+    }
+
+    /**
+     * Load the list of images from the local database
+     */
+    private static class SaveImageTask extends AsyncTask<Picture, Void, Void> {
+
+        private AsyncTaskResponseListener<Void> responseListener;
+
+        SaveImageTask() {
+            super();
+        }
+
+        SaveImageTask(AsyncTaskResponseListener<Void> listener) {
+            super();
+            this.responseListener = listener;
+        }
+
+        @Override
+        protected Void doInBackground(Picture... pictures) {
+            PicturesDao dao = PictureTagsApplication.getDatabase().getPicturesDao();
+            dao.insert(pictures);
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void param) {
+            super.onPostExecute(param);
+
+            if (this.responseListener != null) {
+                this.responseListener.onAsyncTaskDone(null);
+            }
+        }
     }
 }

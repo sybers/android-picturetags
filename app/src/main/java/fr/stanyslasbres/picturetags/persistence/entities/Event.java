@@ -1,22 +1,23 @@
 package fr.stanyslasbres.picturetags.persistence.entities;
 
 import android.arch.persistence.room.*;
+import android.net.Uri;
+import android.support.annotation.NonNull;
 
-import java.util.Date;
+import static android.arch.persistence.room.ForeignKey.CASCADE;
 
-@Entity(tableName = "events")
+@Entity(
+        tableName = "events",
+        foreignKeys = @ForeignKey(entity = Picture.class, parentColumns = "uri", childColumns = "pictureUri", onDelete = CASCADE)
+)
 public class Event {
-    @PrimaryKey(autoGenerate = true)
-    public int id;
+    @PrimaryKey
+    public final long id;
 
-    @ColumnInfo(name = "start_date")
-    public Date startDate;
+    public final Uri pictureUri;
 
-    @ColumnInfo(name = "end_date")
-    public Date endDate;
-
-    public Event(Date startDate, Date endDate) {
-        this.startDate = startDate;
-        this.endDate = endDate;
+    public Event(final long id, @NonNull final Uri pictureUri) {
+        this.id = id;
+        this.pictureUri = pictureUri;
     }
 }

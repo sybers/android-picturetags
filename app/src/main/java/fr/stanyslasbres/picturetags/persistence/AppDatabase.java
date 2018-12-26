@@ -14,7 +14,7 @@ import fr.stanyslasbres.picturetags.persistence.entities.Event;
 /**
  * Application database class, will be inflated by the RoomDao
  */
-@Database(entities = {Picture.class, Contact.class, Event.class}, version = 1, exportSchema = false)
+@Database(entities = {Picture.class, Contact.class, Event.class}, version = 3, exportSchema = false)
 @TypeConverters({AppConverters.class})
 public abstract class AppDatabase extends RoomDatabase {
     public abstract PicturesDao getPicturesDao();
