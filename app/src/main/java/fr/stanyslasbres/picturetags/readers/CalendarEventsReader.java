@@ -8,17 +8,20 @@ import android.database.Cursor;
 import android.provider.CalendarContract;
 import android.support.v4.content.ContextCompat;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
+
+import fr.stanyslasbres.picturetags.viewmodel.EventViewModel;
 
 public class CalendarEventsReader {
-    public static final String[] DEFAULT_PROJECTION = new String[]{
+    private static final String[] EVENT_PROJECTION = new String[]{
             CalendarContract.Events._ID,
             CalendarContract.Events.TITLE,
             CalendarContract.Events.DTSTART,
             CalendarContract.Events.DTEND,
+            CalendarContract.Events.CALENDAR_COLOR,
     };
-
-    private String[] projection = DEFAULT_PROJECTION;
 
     private Context context;
 
@@ -31,28 +34,12 @@ public class CalendarEventsReader {
     }
 
     /**
-     * Set the projection to use to retrieve data from the content resolver.
-     * @param projection Projection
-     */
-    public void setProjection(String[] projection) {
-        this.projection = projection;
-    }
-
-    /**
-     * Get the current projection used by the reader
-     * @return Current projection
-     */
-    public String[] getProjection() {
-        return this.projection;
-    }
-
-    /**
      * Retrieve a cursor with all the events for a day.
      * @param cal Calendar with the day to use
      * @return Cursor with the events or null if the permission is not granted
      */
     @SuppressLint("MissingPermission")
-    public Cursor readEventsForDay(Calendar cal) {
+    public List<EventViewModel> readEventsForDay(Calendar cal) {
         if (!hasCalendarPermission()) {
             return null;
         }
@@ -68,7 +55,8 @@ public class CalendarEventsReader {
         String queryString = String.format("%s < ? AND %s > ?", CalendarContract.Events.DTSTART, CalendarContract.Events.DTEND);
         String[] queryArgs = new String[]{dayEnd, dayStart};
 
-        return context.getContentResolver().query(CalendarContract.Events.CONTENT_URI, projection, queryString, queryArgs, null);
+        Cursor data = context.getContentResolver().query(CalendarContract.Events.CONTENT_URI, EVENT_PROJECTION, queryString, queryArgs, null);
+        return inflateFromCursor(data);
     }
 
     /**
@@ -77,7 +65,7 @@ public class CalendarEventsReader {
      * @return Cursor with the matching events
      */
     @SuppressLint("MissingPermission")
-    public Cursor readEventWithIds(long... eventsIds) {
+    public List<EventViewModel> readEventsWithIds(long... eventsIds) {
         if (!hasCalendarPermission()) {
             return null;
         }
@@ -90,7 +78,41 @@ public class CalendarEventsReader {
             queryArgs[i] = String.valueOf(eventsIds[i]);
         }
 
-        return context.getContentResolver().query(CalendarContract.Events.CONTENT_URI, projection, queryString, queryArgs, null);
+        Cursor data = context.getContentResolver().query(CalendarContract.Events.CONTENT_URI, EVENT_PROJECTION, queryString, queryArgs, null);
+        return inflateFromCursor(data);
+    }
+
+    /**
+     * Generate a list of inflated view models from the cursor
+     * @param data Cursor with events data
+     * @return inflated list
+     */
+    private List<EventViewModel> inflateFromCursor(Cursor data) {
+        List<EventViewModel> events = new ArrayList<>();
+
+        // return an empty list of the cursor is null
+        if(data == null) return events;
+
+        for(data.moveToFirst(); !data.isAfterLast(); data.moveToNext()) {
+            long id = data.getLong(data.getColumnIndex(CalendarContract.Events._ID));
+            EventViewModel vm = new EventViewModel(id);
+
+            String title = data.getString(data.getColumnIndex(CalendarContract.Events.TITLE));
+            vm.setTitle(title);
+
+            long eventStart = data.getLong(data.getColumnIndex(CalendarContract.Events.DTSTART));
+            vm.setStartDate(eventStart);
+
+            long eventEnd = data.getLong(data.getColumnIndex(CalendarContract.Events.DTEND));
+            vm.setEndDate(eventEnd);
+
+            int calendarColor = data.getInt(data.getColumnIndex(CalendarContract.Events.CALENDAR_COLOR));
+            vm.setCalendarColor(calendarColor);
+
+            events.add(vm);
+        }
+
+        return events;
     }
 
     /**

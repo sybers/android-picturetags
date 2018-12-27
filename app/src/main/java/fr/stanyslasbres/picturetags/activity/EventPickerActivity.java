@@ -37,7 +37,6 @@ public class EventPickerActivity extends AppCompatActivity {
         // create adapter and eventsReader
         adapter = new EventsAdapter(this);
         eventsReader = new CalendarEventsReader(this);
-        eventsReader.setProjection(EventsAdapter.CALENDAR_PROJECTION);
 
         // create the recyclerView and attach the adapter
         RecyclerView eventList = findViewById(R.id.eventList);

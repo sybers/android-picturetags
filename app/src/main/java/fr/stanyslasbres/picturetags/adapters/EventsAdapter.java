@@ -16,21 +16,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.text.DateFormat;
-import java.util.Calendar;
+import java.util.List;
 
 import fr.stanyslasbres.picturetags.R;
 import fr.stanyslasbres.picturetags.activity.EventPickerActivity;
+import fr.stanyslasbres.picturetags.viewmodel.EventViewModel;
 
 public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewHolder> {
-    public static final String[] CALENDAR_PROJECTION = new String[]{
-            CalendarContract.Events._ID,
-            CalendarContract.Events.TITLE,
-            CalendarContract.Events.DTSTART,
-            CalendarContract.Events.DTEND,
-            CalendarContract.Events.CALENDAR_COLOR,
-    };
-
     class EventViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private final TextView title;
         private final TextView start;
@@ -49,7 +41,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
 
         @Override
         public void onClick(View view) {
-            if(getAdapterPosition() == RecyclerView.NO_POSITION || title.getText() == "No Event") {
+            if(getAdapterPosition() == RecyclerView.NO_POSITION) {
                 return;
             }
 
@@ -57,11 +49,11 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
             selectedItemPosition = getAdapterPosition();
             notifyItemChanged(selectedItemPosition);
 
-            data.moveToPosition(getAdapterPosition());
+            EventViewModel vm = data.get(getAdapterPosition());
 
-            // TODO : dirty way to access the activity from adapter...
+            // FIXME : dirty way to access the activity from adapter...
             Intent resultIntent = new Intent();
-            resultIntent.putExtra(EventPickerActivity.EXTRA_SELECTED_EVENT_ID, data.getLong(data.getColumnIndex(CalendarContract.Events._ID)));
+            resultIntent.putExtra(EventPickerActivity.EXTRA_SELECTED_EVENT_ID, vm.getId());
 
             if(context instanceof Activity) {
                 ((Activity) context).setResult(Activity.RESULT_OK, resultIntent);
@@ -70,7 +62,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
         }
     }
 
-    private Cursor data;
+    private List<EventViewModel> data;
     private Context context;
     private int selectedItemPosition = RecyclerView.NO_POSITION;
 
@@ -80,9 +72,9 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
 
     /**
      * Set the current data for the Adapter
-     * @param data {@link Cursor} data cursor object
+     * @param data {@link List<EventViewModel>} data list
      */
-    public void setData(Cursor data) {
+    public void setData(List<EventViewModel> data) {
         this.data = data;
 
         // reset selected position and notify data changed
@@ -94,7 +86,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
      * Get the {@link Cursor} data object
      * @return Cursor data
      */
-    public Cursor getData() {
+    public List<EventViewModel> getData() {
         return this.data;
     }
 
@@ -108,56 +100,35 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
 
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
-        if (data == null || data.getCount() == 0) {
-            holder.title.setText("No Event");
-            holder.start.setText("");
-            holder.end.setText("");
-        } else {
-            data.moveToPosition(position);
-
-            // set background color according to calendar color
-            int calendarColor = data.getInt(data.getColumnIndex(CalendarContract.Events.CALENDAR_COLOR));
-            if (holder.background != null) {
-                if(position == selectedItemPosition) {
-                    calendarColor = darkenColorForSelection(calendarColor);
-                }
-                holder.background.setColor(calendarColor);
-                holder.itemView.setBackground(holder.background);
-            }
-
-            // set the event title
-            holder.title.setText(data.getString(data.getColumnIndex(CalendarContract.Events.TITLE)));
-
-            // set the start date
-            long eventStart = data.getLong(data.getColumnIndex(CalendarContract.Events.DTSTART));
-            holder.start.setText(timestampToFormattedString(eventStart));
-
-            // set the end date
-            long eventEnd = data.getLong(data.getColumnIndex(CalendarContract.Events.DTEND));
-            holder.end.setText(timestampToFormattedString(eventEnd));
+        if (data == null || data.size() == 0) {
+            return;
         }
+
+        EventViewModel vm = data.get(position);
+
+        if (holder.background != null) {
+            boolean isSelected = position == selectedItemPosition;
+            holder.background.setColor(isSelected ? darkenColorForSelection(vm.getCalendarColor()) : vm.getCalendarColor());
+            holder.itemView.setBackground(holder.background);
+        }
+
+        // set the event title
+        holder.title.setText(vm.getTitle());
+
+        // set the start date
+        holder.start.setText(vm.getStartDateFormatted());
+
+        // set the end date
+        holder.end.setText(vm.getEndDateFormatted());
     }
 
     @Override
     public int getItemCount() {
-        if(data == null || data.getCount() == 0) {
-            return 1;
-        } else {
-            return data.getCount();
+        if(data == null) {
+            return 0;
         }
-    }
 
-    /**
-     * Get a human readable date representation for the given timestamp
-     * @param timestamp timestamp
-     * @return string representation of the given timestamp
-     */
-    private String timestampToFormattedString(long timestamp) {
-        Calendar calendar = Calendar.getInstance();
-        DateFormat dateFormat = DateFormat.getInstance();
-
-        calendar.setTimeInMillis(timestamp);
-        return dateFormat.format(calendar.getTime());
+        return data.size();
     }
 
     /**
