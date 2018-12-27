@@ -10,19 +10,26 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.github.clans.fab.FloatingActionButton;
 import com.squareup.picasso.Picasso;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import fr.stanyslasbres.picturetags.AsyncTaskResponseListener;
 import fr.stanyslasbres.picturetags.PictureTagsApplication;
 import fr.stanyslasbres.picturetags.R;
 import fr.stanyslasbres.picturetags.persistence.dao.PicturesDao;
+import fr.stanyslasbres.picturetags.persistence.entities.Event;
 import fr.stanyslasbres.picturetags.persistence.entities.Picture;
 
 public final class TagImageActivity extends AppCompatActivity {
     private static final int PICK_EVENT = 0;
     private static final int PICK_CONTACT = 1;
+
+    private Set<Long> pickedEventsIds = new HashSet<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +62,7 @@ public final class TagImageActivity extends AppCompatActivity {
             SaveImageTask task = new SaveImageTask();
             task.execute(pic);
 
+            setResult(Activity.RESULT_OK);
             finish();
         });
 
@@ -69,6 +77,25 @@ public final class TagImageActivity extends AppCompatActivity {
         // pick contact FAB
         FloatingActionButton fabPickContact = findViewById(R.id.fab_pick_contact);
         fabPickContact.setOnClickListener(view -> pickContact());
+    }
+
+    @Override
+    public void onBackPressed() {
+        showCancelConfirmDialog();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch(requestCode) {
+            case PICK_EVENT:
+                onEventPicked(resultCode, data);
+                break;
+            case PICK_CONTACT:
+                onContactPicked(resultCode, data);
+                break;
+        }
     }
 
     /**
@@ -88,20 +115,6 @@ public final class TagImageActivity extends AppCompatActivity {
         startActivityForResult(intent, PICK_CONTACT);
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        switch(requestCode) {
-            case PICK_EVENT:
-                onEventPicked(resultCode, data);
-                break;
-            case PICK_CONTACT:
-                onContactPicked(resultCode, data);
-                break;
-        }
-    }
-
     /**
      * Method called when the user picked an event from the event picker
      * @param resultCode Activity result code
@@ -111,7 +124,8 @@ public final class TagImageActivity extends AppCompatActivity {
         if(resultCode == Activity.RESULT_OK) {
             if(data != null) {
                 long id = data.getLongExtra(EventPickerActivity.EXTRA_SELECTED_EVENT_ID, -1);
-                new AlertDialog.Builder(this).setTitle("RESULT").setMessage("" + id).show();
+                Toast.makeText(this, "Event added", Toast.LENGTH_SHORT).show();
+                pickedEventsIds.add(id);
             }
         }
     }
@@ -125,16 +139,15 @@ public final class TagImageActivity extends AppCompatActivity {
         if(resultCode == Activity.RESULT_OK) {
             if(data != null) {
                 long id = data.getLongExtra(EventPickerActivity.EXTRA_SELECTED_EVENT_ID, -1);
-                new AlertDialog.Builder(this).setTitle("RESULT").setMessage("" + id).show();
+                Toast.makeText(this, "Event added", Toast.LENGTH_SHORT).show();
+                // TODO : add picked contact to a set
             }
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        showCancelConfirmDialog();
-    }
-
+    /**
+     * Show the user a confirmation dialog to avoid quiting with unsaved changes
+     */
     private void showCancelConfirmDialog() {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 

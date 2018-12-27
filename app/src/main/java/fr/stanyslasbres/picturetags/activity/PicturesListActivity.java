@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import com.github.clans.fab.FloatingActionButton;
 
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -24,11 +23,10 @@ import fr.stanyslasbres.picturetags.persistence.entities.Picture;
  * PicturesListActivity presents the list of annotated pictures and allows the user to pick and annotate a picture
  */
 public final class PicturesListActivity extends AppCompatActivity implements AsyncTaskResponseListener<List<Picture>> {
-    private static final int PICK_IMAGE_TO_ANNOTATE = 0;
+    private static final int RESULT_PICK_IMAGE_TO_ANNOTATE = 0;
+    private static final int RESULT_IMAGE_ANNOTATED = 1;
 
     public static final String EXTRA_IMAGE_URI = "fr.stanyslasbres.picturetags.EXTRA_IMAGE_URI";
-
-    private LoadImagesTask loadPicturesTask = new LoadImagesTask(this);
     private PicturesAdapter adapter;
 
     @Override
@@ -46,7 +44,7 @@ public final class PicturesListActivity extends AppCompatActivity implements Asy
         eventList.setLayoutManager(new GridLayoutManager(this, 2));
 
         // load pictures
-        this.loadPicturesTask.execute();
+        new LoadImagesTask(this).execute();
     }
 
     @Override
@@ -54,9 +52,11 @@ public final class PicturesListActivity extends AppCompatActivity implements Asy
         super.onActivityResult(requestCode, resultCode, data);
 
         switch(requestCode) {
-            case PICK_IMAGE_TO_ANNOTATE:
+            case RESULT_PICK_IMAGE_TO_ANNOTATE:
                 onImageToAnnotatePicked(resultCode, data);
                 break;
+            case RESULT_IMAGE_ANNOTATED:
+                onImageAnnotated(resultCode, data);
         }
     }
 
@@ -71,7 +71,7 @@ public final class PicturesListActivity extends AppCompatActivity implements Asy
     private void pickImageToAnnotate() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.setType("image/*");
-        startActivityForResult(intent, PICK_IMAGE_TO_ANNOTATE);
+        startActivityForResult(intent, RESULT_PICK_IMAGE_TO_ANNOTATE);
     }
 
     /**
@@ -89,10 +89,22 @@ public final class PicturesListActivity extends AppCompatActivity implements Asy
                 getContentResolver().takePersistableUriPermission(data.getData(), Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
                 // start the image annotation UI
-                startActivity(intent);
+                startActivityForResult(intent, RESULT_IMAGE_ANNOTATED);
             } else {
                 Toast.makeText(this.getApplicationContext(), "Unable to pick the image...", Toast.LENGTH_LONG).show();
             }
+        }
+    }
+
+    /**
+     * After user annotated the image, this methods gets called.
+     * @param resultCode Activity result code
+     * @param data Data from called activity
+     */
+    private void onImageAnnotated(int resultCode, Intent data) {
+        if(resultCode == Activity.RESULT_OK) {
+            // reload the pictures
+            new LoadImagesTask(this).execute();
         }
     }
 

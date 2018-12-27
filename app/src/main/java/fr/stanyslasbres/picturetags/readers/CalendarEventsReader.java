@@ -1,6 +1,7 @@
 package fr.stanyslasbres.picturetags.readers;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -50,8 +51,9 @@ public class CalendarEventsReader {
      * @param cal Calendar with the day to use
      * @return Cursor with the events or null if the permission is not granted
      */
+    @SuppressLint("MissingPermission")
     public Cursor readEventsForDay(Calendar cal) {
-        if (!(ContextCompat.checkSelfPermission(context,  Manifest.permission.READ_CALENDAR)  == PackageManager.PERMISSION_GRANTED)) {
+        if (!hasCalendarPermission()) {
             return null;
         }
 
@@ -67,5 +69,47 @@ public class CalendarEventsReader {
         String[] queryArgs = new String[]{dayEnd, dayStart};
 
         return context.getContentResolver().query(CalendarContract.Events.CONTENT_URI, projection, queryString, queryArgs, null);
+    }
+
+    /**
+     * Read the events with the given Ids
+     * @param eventsIds ids of the events to query
+     * @return Cursor with the matching events
+     */
+    @SuppressLint("MissingPermission")
+    public Cursor readEventWithIds(long... eventsIds) {
+        if (!hasCalendarPermission()) {
+            return null;
+        }
+
+        String queryString = String.format("%s IN (" + makeInPlaceholders(eventsIds.length) + ")", CalendarContract.Events._ID);
+
+        // convert query args to string
+        String[] queryArgs = new String[eventsIds.length];
+        for (int i = 0; i < eventsIds.length; i++) {
+            queryArgs[i] = String.valueOf(eventsIds[i]);
+        }
+
+        return context.getContentResolver().query(CalendarContract.Events.CONTENT_URI, projection, queryString, queryArgs, null);
+    }
+
+    /**
+     * Check if the calendar permission is granted
+     * @return boolean whether the calendar permission is granted
+     */
+    private boolean hasCalendarPermission() {
+        return ContextCompat.checkSelfPermission(context,  Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    /**
+     * Make the placeholders for the `IN` query
+     * @param size number of placeholders to generate
+     * @return placeholders string
+     */
+    private String makeInPlaceholders(int size) {
+        StringBuilder sb = new StringBuilder(size * 2 - 1);
+        sb.append("?");
+        for (int i = 1; i < size; i++) sb.append(",?");
+        return sb.toString();
     }
 }

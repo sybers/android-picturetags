@@ -7,7 +7,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
 
@@ -15,11 +14,12 @@ import java.util.List;
 
 import fr.stanyslasbres.picturetags.R;
 import fr.stanyslasbres.picturetags.persistence.entities.Picture;
+import fr.stanyslasbres.picturetags.widget.SquareImageView;
 
 public class PicturesAdapter extends RecyclerView.Adapter<PicturesAdapter.PictureViewHolder> {
 
     class PictureViewHolder extends RecyclerView.ViewHolder {
-        private final ImageView imageView;
+        private final SquareImageView imageView;
 
         PictureViewHolder(@NonNull View view) {
             super(view);
