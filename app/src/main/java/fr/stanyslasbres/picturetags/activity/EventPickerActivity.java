@@ -11,7 +11,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.View;
 import android.widget.CalendarView;
 
 import java.util.Calendar;
@@ -19,12 +18,11 @@ import java.util.Calendar;
 import fr.stanyslasbres.picturetags.R;
 import fr.stanyslasbres.picturetags.readers.CalendarEventsReader;
 import fr.stanyslasbres.picturetags.adapters.EventsAdapter;
-import fr.stanyslasbres.picturetags.viewmodel.EventViewModel;
 
 /**
  * Allows to pick an event from the calendar and returns the information about it
  */
-public class EventPickerActivity extends AppCompatActivity implements EventsAdapter.OnItemClickListener {
+public class EventPickerActivity extends AppCompatActivity {
     public static final String EXTRA_SELECTED_EVENT_ID = "fr.stanyslasbres.picturetags.SELECTED_EVENT_ID";
 
     private static final int PERMISSION_REQUEST_READ_CALENDAR = 1;
@@ -40,7 +38,12 @@ public class EventPickerActivity extends AppCompatActivity implements EventsAdap
 
         // create adapter and eventsReader
         adapter = new EventsAdapter();
-        adapter.setOnItemClickListener(this);
+        adapter.setOnItemClickListener((view, position, vm) -> {
+            Intent resultIntent = new Intent();
+            resultIntent.putExtra(EventPickerActivity.EXTRA_SELECTED_EVENT_ID, vm.getId());
+            setResult(Activity.RESULT_OK, resultIntent);
+            finish();
+        });
 
         eventsReader = new CalendarEventsReader(this);
 
@@ -103,13 +106,5 @@ public class EventPickerActivity extends AppCompatActivity implements EventsAdap
                 }
             }
         }
-    }
-
-    @Override
-    public void onItemClick(View view, int position, EventViewModel vm) {
-        Intent resultIntent = new Intent();
-        resultIntent.putExtra(EventPickerActivity.EXTRA_SELECTED_EVENT_ID, vm.getId());
-        setResult(Activity.RESULT_OK, resultIntent);
-        finish();
     }
 }

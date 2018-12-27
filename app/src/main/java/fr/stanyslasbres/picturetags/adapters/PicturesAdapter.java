@@ -1,7 +1,5 @@
 package fr.stanyslasbres.picturetags.adapters;
 
-import android.content.Context;
-import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,73 +8,51 @@ import android.view.ViewGroup;
 
 import com.squareup.picasso.Picasso;
 
-import java.util.List;
-
 import fr.stanyslasbres.picturetags.R;
 import fr.stanyslasbres.picturetags.persistence.entities.Picture;
 import fr.stanyslasbres.picturetags.widget.SquareImageView;
 
-public class PicturesAdapter extends RecyclerView.Adapter<PicturesAdapter.PictureViewHolder> {
+public class PicturesAdapter extends SimpleListAdapter<Picture, PicturesAdapter.PictureViewHolder> {
 
-    class PictureViewHolder extends RecyclerView.ViewHolder {
+    class PictureViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        private final SimpleListAdapter.OnItemClickListener<Picture> onItemClickListener;
         private final SquareImageView imageView;
 
-        PictureViewHolder(@NonNull View view) {
+        PictureViewHolder(@NonNull View view, SimpleListAdapter.OnItemClickListener<Picture> onItemClickListener) {
             super(view);
+            itemView.setOnClickListener(this);
+
+            this.onItemClickListener = onItemClickListener;
+
             imageView = view.findViewById(R.id.picture_image_view);
+        }
+
+        @Override
+        public void onClick(View view) {
+            if(onItemClickListener != null) {
+                Picture vm = data.get(getAdapterPosition());
+                onItemClickListener.onItemClick(view, getAdapterPosition(), vm);
+            }
         }
     }
 
-    private List<Picture> data;
-    private Context context;
-
-    public PicturesAdapter(Context context) {
-        this.context = context;
-    }
-
-    /**
-     * Set the current data for the Adapter
-     * @param data {@link List<Picture>} data pictures list
-     */
-    public void setData(List<Picture> data) {
-        this.data = data;
-        this.notifyDataSetChanged();
-    }
-
-    /**
-     * Get the {@link List<Picture>} data object
-     * @return Current data
-     */
-    public List<Picture> getData() {
-        return this.data;
-    }
-
-    @NonNull
     @Override
-    public PictureViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public PictureViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType, OnItemClickListener<Picture> onItemClickListener) {
         return new PictureViewHolder(
-                LayoutInflater.from(context).inflate(R.layout.adapter_item_picture, parent, false)
+                LayoutInflater.from(parent.getContext()).inflate(R.layout.adapter_item_picture, parent, false),
+                onItemClickListener
         );
     }
 
     @Override
-    public void onBindViewHolder(@NonNull PictureViewHolder holder, int position) {
-        if (data != null) {
-            Uri imageUri = data.get(position).uri;
-
-            Picasso.get()
-                    .load(imageUri)
+    public void onBindViewHolder(@NonNull PictureViewHolder holder, Picture vm, int position) {
+        if (vm != null) {
+            Picasso
+                    .get()
+                    .load(vm.uri)
                     .fit()
                     .centerCrop()
                     .into(holder.imageView);
         }
-    }
-
-    @Override
-    public int getItemCount() {
-        if(data == null) {
-            return 0;
-        }
-        return data.size();
     }
 }

@@ -2,6 +2,7 @@ package fr.stanyslasbres.picturetags.activity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import com.github.clans.fab.FloatingActionButton;
 
@@ -22,7 +23,7 @@ import fr.stanyslasbres.picturetags.persistence.entities.Picture;
 /**
  * PicturesListActivity presents the list of annotated pictures and allows the user to pick and annotate a picture
  */
-public final class PicturesListActivity extends AppCompatActivity implements AsyncTaskResponseListener<List<Picture>> {
+public final class PicturesListActivity extends AppCompatActivity {
     private static final int RESULT_PICK_IMAGE_TO_ANNOTATE = 0;
     private static final int RESULT_IMAGE_ANNOTATED = 1;
 
@@ -38,13 +39,14 @@ public final class PicturesListActivity extends AppCompatActivity implements Asy
         fabPickImage.setOnClickListener(view -> pickImageToAnnotate());
 
         // create adapter and attach it to the recyclerView
-        adapter = new PicturesAdapter(this);
+        adapter = new PicturesAdapter();
+        adapter.setOnItemClickListener((view, position, vm) -> goToAnnotationActivity(vm.uri));
         RecyclerView eventList = findViewById(R.id.pictures_list);
         eventList.setAdapter(adapter);
         eventList.setLayoutManager(new GridLayoutManager(this, 2));
 
         // load pictures
-        new LoadImagesTask(this).execute();
+        new LoadImagesTask(pictures -> adapter.setData(pictures)).execute();
     }
 
     @Override
@@ -60,11 +62,6 @@ public final class PicturesListActivity extends AppCompatActivity implements Asy
         }
     }
 
-    @Override
-    public void onAsyncTaskDone(List<Picture> pictures) {
-        adapter.setData(pictures);
-    }
-
     /**
      * Start an intent to pick an image from the filesystem
      */
@@ -75,6 +72,18 @@ public final class PicturesListActivity extends AppCompatActivity implements Asy
     }
 
     /**
+     * Start annotating the image !
+     * @param uri image Uri
+     */
+    private void goToAnnotationActivity(Uri uri) {
+        Intent intent = new Intent(this, TagImageActivity.class);
+        intent.putExtra(EXTRA_IMAGE_URI, uri.toString());
+
+        // start the image annotation UI
+        startActivityForResult(intent, RESULT_IMAGE_ANNOTATED);
+    }
+
+    /**
      * When the user picked an image, just redirect him to the annotation UI or show a message if something went wrong
      * @param resultCode Activity result code
      * @param data Data containing the picked image URI
@@ -82,14 +91,11 @@ public final class PicturesListActivity extends AppCompatActivity implements Asy
     private void onImageToAnnotatePicked(int resultCode, Intent data) {
         if(resultCode == Activity.RESULT_OK) {
             if(data != null && data.getData() != null) {
-                Intent intent = new Intent(this, TagImageActivity.class);
-                intent.putExtra(EXTRA_IMAGE_URI, data.getData().toString());
-
                 // ask the content resolver to keep permission to read this Uri across device reboots
                 getContentResolver().takePersistableUriPermission(data.getData(), Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-                // start the image annotation UI
-                startActivityForResult(intent, RESULT_IMAGE_ANNOTATED);
+                // start annotation activity
+                goToAnnotationActivity(data.getData());
             } else {
                 Toast.makeText(this.getApplicationContext(), "Unable to pick the image...", Toast.LENGTH_LONG).show();
             }
@@ -104,7 +110,8 @@ public final class PicturesListActivity extends AppCompatActivity implements Asy
     private void onImageAnnotated(int resultCode, Intent data) {
         if(resultCode == Activity.RESULT_OK) {
             // reload the pictures
-            new LoadImagesTask(this).execute();
+            // TODO : use observable data to avoid this kind of code duplication...
+            new LoadImagesTask(pictures -> adapter.setData(pictures)).execute();
         }
     }
 
