@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
-import android.provider.CalendarContract;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
@@ -19,15 +18,18 @@ import android.widget.TextView;
 import java.util.List;
 
 import fr.stanyslasbres.picturetags.R;
-import fr.stanyslasbres.picturetags.activity.EventPickerActivity;
 import fr.stanyslasbres.picturetags.viewmodel.EventViewModel;
 
 public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewHolder> {
+    public interface OnItemClickListener {
+        void onItemClick(View view, int position, EventViewModel vm);
+    }
+
     class EventViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private final TextView title;
         private final TextView start;
         private final TextView end;
-        private final GradientDrawable background;
+        private GradientDrawable background;
 
         EventViewHolder(@NonNull View view) {
             super(view);
@@ -36,7 +38,6 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
             title = view.findViewById(R.id.event_title);
             start = view.findViewById(R.id.event_start);
             end = view.findViewById(R.id.event_end);
-            background = (GradientDrawable) ContextCompat.getDrawable(context, R.drawable.adapter_item_event_bg);
         }
 
         @Override
@@ -51,23 +52,23 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
 
             EventViewModel vm = data.get(getAdapterPosition());
 
-            // FIXME : dirty way to access the activity from adapter...
-            Intent resultIntent = new Intent();
-            resultIntent.putExtra(EventPickerActivity.EXTRA_SELECTED_EVENT_ID, vm.getId());
 
-            if(context instanceof Activity) {
-                ((Activity) context).setResult(Activity.RESULT_OK, resultIntent);
-                ((Activity) context).finish();
+            if(onItemClickListener != null) {
+                onItemClickListener.onItemClick(view, getAdapterPosition(), vm);
             }
         }
     }
 
     private List<EventViewModel> data;
-    private Context context;
+    private OnItemClickListener onItemClickListener;
     private int selectedItemPosition = RecyclerView.NO_POSITION;
 
-    public EventsAdapter(Context context) {
-        this.context = context;
+    /**
+     * Attach the item click listener to the list
+     * @param listener listener
+     */
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.onItemClickListener = listener;
     }
 
     /**
@@ -93,9 +94,13 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new EventViewHolder(
-                LayoutInflater.from(context).inflate(R.layout.adapter_item_event, parent, false)
+        EventViewHolder viewHolder = new EventViewHolder(
+                LayoutInflater.from(parent.getContext()).inflate(R.layout.adapter_item_event, parent, false)
         );
+
+        viewHolder.background = (GradientDrawable) ContextCompat.getDrawable(parent.getContext(), R.drawable.adapter_item_event_bg);
+
+        return viewHolder;
     }
 
     @Override

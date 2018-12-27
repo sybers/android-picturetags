@@ -65,17 +65,17 @@ public class CalendarEventsReader {
      * @return Cursor with the matching events
      */
     @SuppressLint("MissingPermission")
-    public List<EventViewModel> readEventsWithIds(long... eventsIds) {
-        if (!hasCalendarPermission()) {
+    public List<EventViewModel> readEventsWithIds(List<Long> eventsIds) {
+        if (!hasCalendarPermission() || eventsIds == null || eventsIds.size() == 0) {
             return null;
         }
 
-        String queryString = String.format("%s IN (" + makeInPlaceholders(eventsIds.length) + ")", CalendarContract.Events._ID);
+        String queryString = String.format("%s IN (" + makeInPlaceholders(eventsIds.size()) + ")", CalendarContract.Events._ID);
 
         // convert query args to string
-        String[] queryArgs = new String[eventsIds.length];
-        for (int i = 0; i < eventsIds.length; i++) {
-            queryArgs[i] = String.valueOf(eventsIds[i]);
+        String[] queryArgs = new String[eventsIds.size()];
+        for (int i = 0; i < eventsIds.size(); i++) {
+            queryArgs[i] = String.valueOf(eventsIds.get(i));
         }
 
         Cursor data = context.getContentResolver().query(CalendarContract.Events.CONTENT_URI, EVENT_PROJECTION, queryString, queryArgs, null);
@@ -91,7 +91,7 @@ public class CalendarEventsReader {
         List<EventViewModel> events = new ArrayList<>();
 
         // return an empty list of the cursor is null
-        if(data == null) return events;
+        if(data == null) return null;
 
         for(data.moveToFirst(); !data.isAfterLast(); data.moveToNext()) {
             long id = data.getLong(data.getColumnIndex(CalendarContract.Events._ID));

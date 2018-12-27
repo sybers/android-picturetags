@@ -18,22 +18,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ScrollView
-        android:id="@+id/scrollView"
-        android:layout_width="match_parent"
+    <android.support.v4.view.ViewPager
+        android:id="@+id/tag_pager"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="#ffffff"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/annotated_image_view" />
+        app:layout_constraintBottom_toTopOf="@id/bottom_action_bar"
+        app:layout_constraintTop_toBottomOf="@id/annotated_image_view"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
     <LinearLayout
+        android:id="@+id/bottom_action_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/adapter_item_event_bg"
-        android:backgroundTint="#333333"
+        android:background="#333333"
         android:elevation="2dp"
         android:padding="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -68,7 +68,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/scrollView"
+        app:layout_constraintBottom_toBottomOf="@+id/annotated_image_view"
         app:layout_constraintEnd_toEndOf="@id/annotated_image_view"
         fab:menu_icon="@drawable/fab_add">
 

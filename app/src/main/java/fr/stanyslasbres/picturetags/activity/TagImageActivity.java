@@ -1,10 +1,15 @@
 package fr.stanyslasbres.picturetags.activity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,21 +20,32 @@ import android.widget.Toast;
 import com.github.clans.fab.FloatingActionButton;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import fr.stanyslasbres.picturetags.AsyncTaskResponseListener;
 import fr.stanyslasbres.picturetags.PictureTagsApplication;
 import fr.stanyslasbres.picturetags.R;
+import fr.stanyslasbres.picturetags.adapters.EventsAdapter;
+import fr.stanyslasbres.picturetags.fragment.ContactListFragment;
+import fr.stanyslasbres.picturetags.fragment.EventListFragment;
 import fr.stanyslasbres.picturetags.persistence.dao.PicturesDao;
-import fr.stanyslasbres.picturetags.persistence.entities.Event;
 import fr.stanyslasbres.picturetags.persistence.entities.Picture;
+import fr.stanyslasbres.picturetags.readers.CalendarEventsReader;
+import fr.stanyslasbres.picturetags.viewmodel.EventViewModel;
 
 public final class TagImageActivity extends AppCompatActivity {
     private static final int PICK_EVENT = 0;
     private static final int PICK_CONTACT = 1;
 
+    private ViewPager pager;
+
     private Set<Long> pickedEventsIds = new HashSet<>();
+
+    private EventsAdapter eventsAdapter;
+    private CalendarEventsReader eventsReader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +53,6 @@ public final class TagImageActivity extends AppCompatActivity {
         setContentView(R.layout.activity_tag_image);
 
         String imageUriString = getIntent().getStringExtra(PicturesListActivity.EXTRA_IMAGE_URI);
-
         ImageView annotatedPictureImageView = findViewById(R.id.annotated_image_view);
 
         // load image with picasso
@@ -77,11 +92,29 @@ public final class TagImageActivity extends AppCompatActivity {
         // pick contact FAB
         FloatingActionButton fabPickContact = findViewById(R.id.fab_pick_contact);
         fabPickContact.setOnClickListener(view -> pickContact());
+
+        // create the pager
+        pager = findViewById(R.id.tag_pager);
+        TagPicturePagerAdapter pagerAdapter = new TagPicturePagerAdapter(getSupportFragmentManager());
+        pager.setAdapter(pagerAdapter);
+
+        // create adapter and eventsReader
+        eventsAdapter = pagerAdapter.eventListFragment.getAdapter();
+        eventsReader = new CalendarEventsReader(this);
+
+        // display the events related to the picture
+        List<EventViewModel> events = eventsReader.readEventsWithIds(new ArrayList<>(pickedEventsIds));
+        eventsAdapter.setData(events);
+
     }
 
     @Override
     public void onBackPressed() {
-        showCancelConfirmDialog();
+        if(pager.getCurrentItem() == 0) {
+            showCancelConfirmDialog();
+        } else {
+            pager.setCurrentItem(pager.getCurrentItem() - 1);
+        }
     }
 
     @Override
@@ -126,6 +159,9 @@ public final class TagImageActivity extends AppCompatActivity {
                 long id = data.getLongExtra(EventPickerActivity.EXTRA_SELECTED_EVENT_ID, -1);
                 Toast.makeText(this, "Event added", Toast.LENGTH_SHORT).show();
                 pickedEventsIds.add(id);
+
+                List<EventViewModel> events = eventsReader.readEventsWithIds(new ArrayList<>(pickedEventsIds));
+                eventsAdapter.setData(events);
             }
         }
     }
@@ -192,6 +228,35 @@ public final class TagImageActivity extends AppCompatActivity {
             if (this.responseListener != null) {
                 this.responseListener.onAsyncTaskDone(null);
             }
+        }
+    }
+
+    /**
+     * Adapter class for the viewpager displaying the list of events and contacts
+     */
+    private class TagPicturePagerAdapter extends FragmentPagerAdapter {
+        private EventListFragment eventListFragment;
+        private ContactListFragment contactListFragment;
+
+        public TagPicturePagerAdapter(FragmentManager fm) {
+            super(fm);
+
+            eventListFragment = EventListFragment.newInstance();
+            contactListFragment = ContactListFragment.newInstance();
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            switch (position) {
+                case 0: return eventListFragment;
+                case 1: return contactListFragment;
+                default: return null;
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return 2;
         }
     }
 }
