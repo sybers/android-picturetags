@@ -12,15 +12,22 @@ import fr.stanyslasbres.picturetags.R;
 import fr.stanyslasbres.picturetags.persistence.entities.Picture;
 import fr.stanyslasbres.picturetags.widget.SquareImageView;
 
-public class PicturesAdapter extends SimpleListAdapter<Picture, PicturesAdapter.PictureViewHolder> {
+public final class PicturesAdapter extends SimpleListAdapter<Picture, PicturesAdapter.PictureViewHolder> {
+    public interface OnItemLongClickListener<T> {
+        void onItemLongClick(View view, int position, T vm);
+    }
 
-    class PictureViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    class PictureViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         private final SimpleListAdapter.OnItemClickListener<Picture> onItemClickListener;
         private final SquareImageView imageView;
 
         PictureViewHolder(@NonNull View view, SimpleListAdapter.OnItemClickListener<Picture> onItemClickListener) {
             super(view);
             itemView.setOnClickListener(this);
+
+            if(onItemLongClickListener != null) {
+                itemView.setOnLongClickListener(this);
+            }
 
             this.onItemClickListener = onItemClickListener;
 
@@ -34,6 +41,21 @@ public class PicturesAdapter extends SimpleListAdapter<Picture, PicturesAdapter.
                 onItemClickListener.onItemClick(view, getAdapterPosition(), vm);
             }
         }
+
+        @Override
+        public boolean onLongClick(View view) {
+            Picture vm = data.get(getAdapterPosition());
+            if(onItemLongClickListener != null) {
+                onItemLongClickListener.onItemLongClick(view, getAdapterPosition(), vm);
+            }
+            return true;
+        }
+    }
+
+    private OnItemLongClickListener<Picture> onItemLongClickListener;
+
+    public void setOnItemLongClickListener(OnItemLongClickListener<Picture> onItemLongClickListener) {
+        this.onItemLongClickListener = onItemLongClickListener;
     }
 
     @Override

@@ -22,7 +22,7 @@ import fr.stanyslasbres.picturetags.adapters.EventsAdapter;
 /**
  * Allows to pick an event from the calendar and returns the information about it
  */
-public class EventPickerActivity extends AppCompatActivity {
+public final class EventPickerActivity extends AppCompatActivity {
     public static final String EXTRA_SELECTED_EVENT_ID = "fr.stanyslasbres.picturetags.SELECTED_EVENT_ID";
 
     private static final int PERMISSION_REQUEST_READ_CALENDAR = 1;

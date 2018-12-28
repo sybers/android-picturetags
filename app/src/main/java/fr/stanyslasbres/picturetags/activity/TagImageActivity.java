@@ -133,12 +133,20 @@ public final class TagImageActivity extends AppCompatActivity {
 
         // create adapter and eventsReader
         eventsAdapter = pagerAdapter.eventListFragment.getAdapter();
+        eventsAdapter.setOnItemClickListener((view, position, vm) -> {
+            pickedEventsIds.remove(vm.getId());
+            loadEvents();
+        });
         eventsReader = new CalendarEventsReader(this);
 
         loadEvents();
 
         // create contacts adapter
         contactsAdapter = pagerAdapter.contactListFragment.getAdapter();
+        contactsAdapter.setOnItemClickListener((view, position, vm) -> {
+            pickedContactsIds.remove(vm.getId());
+            loadContacts();
+        });
         contactsReader = new ContactsReader(this);
 
         loadContacts();
@@ -250,6 +258,9 @@ public final class TagImageActivity extends AppCompatActivity {
                 pickedEventsIds.add(id);
 
                 loadEvents();
+
+                // move pager to events
+                pager.setCurrentItem(TagPicturePagerAdapter.PAGE_EVENTS);
             }
         }
     }
@@ -262,27 +273,15 @@ public final class TagImageActivity extends AppCompatActivity {
     private void onContactPicked(int resultCode, Intent data) {
         if(resultCode == Activity.RESULT_OK) {
             if(data != null) {
-                if(!hasPermission(Manifest.permission.READ_CONTACTS)) {
-                    if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                            Manifest.permission.READ_CONTACTS)) {
-                        // Show an explanation to the user *asynchronously* -- don't block
-                        // this thread waiting for the user's response! After the user
-                        // sees the explanation, try again to request the permission.
+                Toast.makeText(this, "Contact added", Toast.LENGTH_SHORT).show();
 
-                    } else {
-                        // No explanation needed; request the permission
-                        ActivityCompat.requestPermissions(this,
-                                new String[]{Manifest.permission.READ_CONTACTS},
-                                PERMISSION_REQUEST_READ_CONTACTS);
-                    }
-                } else {
-                    Toast.makeText(this, "Contact added", Toast.LENGTH_SHORT).show();
+                ContactViewModel vm = contactsReader.readByUri(data.getData());
+                pickedContactsIds.add(vm.getId());
 
-                    ContactViewModel vm = contactsReader.readByUri(data.getData());
-                    pickedContactsIds.add(vm.getId());
+                // move pager to contacts
+                pager.setCurrentItem(TagPicturePagerAdapter.PAGE_CONTACTS);
 
-                    loadContacts();
-                }
+                loadContacts();
             }
         }
     }
@@ -361,6 +360,9 @@ public final class TagImageActivity extends AppCompatActivity {
      * Adapter class for the viewpager displaying the list of events and contacts
      */
     private class TagPicturePagerAdapter extends FragmentPagerAdapter {
+        public static final int PAGE_EVENTS = 0;
+        public static final int PAGE_CONTACTS = 1;
+
         private EventListFragment eventListFragment;
         private ContactListFragment contactListFragment;
 

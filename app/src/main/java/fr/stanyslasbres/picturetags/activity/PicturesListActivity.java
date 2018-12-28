@@ -6,10 +6,12 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import com.github.clans.fab.FloatingActionButton;
 
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.util.List;
@@ -41,6 +43,7 @@ public final class PicturesListActivity extends AppCompatActivity {
         // create adapter and attach it to the recyclerView
         adapter = new PicturesAdapter();
         adapter.setOnItemClickListener((view, position, vm) -> goToAnnotationActivity(vm.uri));
+        adapter.setOnItemLongClickListener((view, position, vm) -> deleteAnnotatedPicture(vm));
         RecyclerView eventList = findViewById(R.id.pictures_list);
         eventList.setAdapter(adapter);
         eventList.setLayoutManager(new GridLayoutManager(this, 2));
@@ -81,6 +84,30 @@ public final class PicturesListActivity extends AppCompatActivity {
 
         // start the image annotation UI
         startActivityForResult(intent, RESULT_IMAGE_ANNOTATED);
+    }
+
+    /**
+     * Delete the annotated picture from the
+     * @param picture picture to delete
+     */
+    private void deleteAnnotatedPicture(Picture picture) {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        alert
+                .setTitle("Delete this annotated picture?")
+                .setMessage("Are you sure you want to delete this picture?")
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    new DeleteImageTask(response -> {
+                        adapter.getData().remove(picture);
+                        adapter.notifyDataSetChanged();
+                        Toast.makeText(this, "Picture deleted", Toast.LENGTH_LONG).show();
+                    })
+                            .execute(picture);
+                })
+                .setNegativeButton("No", (dialog, which) -> dialog.cancel());
+
+        alert.show();
     }
 
     /**
@@ -138,6 +165,38 @@ public final class PicturesListActivity extends AppCompatActivity {
 
             if (this.responseListener != null) {
                 this.responseListener.onAsyncTaskDone(pictures);
+            }
+        }
+    }
+
+    /**
+     * delete Pictures from the database
+     */
+    private static class DeleteImageTask extends AsyncTask<Picture, Void, Void> {
+        private AsyncTaskResponseListener<Void> responseListener;
+
+        DeleteImageTask(AsyncTaskResponseListener<Void> listener) {
+            super();
+            this.responseListener = listener;
+        }
+
+        @Override
+        protected Void doInBackground(Picture... picture) {
+            try {
+                PictureTagsApplication.getDatabase().getPicturesDao().delete(picture);
+            } catch(Exception e) {
+                Log.e("PicturesListActivity", "Unable to delete the picture from room database...");
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void params) {
+            super.onPostExecute(params);
+
+            if (this.responseListener != null) {
+                this.responseListener.onAsyncTaskDone(params);
             }
         }
     }

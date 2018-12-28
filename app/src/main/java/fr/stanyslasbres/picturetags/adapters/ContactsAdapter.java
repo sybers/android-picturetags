@@ -10,7 +10,7 @@ import android.widget.TextView;
 import fr.stanyslasbres.picturetags.R;
 import fr.stanyslasbres.picturetags.viewmodel.ContactViewModel;
 
-public class ContactsAdapter extends SimpleListAdapter<ContactViewModel, ContactsAdapter.ContactViewHolder> {
+public final class ContactsAdapter extends SimpleListAdapter<ContactViewModel, ContactsAdapter.ContactViewHolder> {
 
     class ContactViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private final SimpleListAdapter.OnItemClickListener<ContactViewModel> onItemClickListener;
