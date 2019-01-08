@@ -21,6 +21,13 @@ With this application, you can select an image from you device and annotate it w
 |:-------------:|:----------------:|:-----------------:|
 | 21 (Lollipop) |     27 (Oreo)    |     27 (Oreo)     |
 
+## Supported Languages
+
+| flag | code  |
+|------|-------|
+| 🇺🇸  | en-US |
+| 🇫🇷  | fr-FR |
+
 ## Usage
 
 To fully enjoy the app's capabilities, you'll need two permissions :
