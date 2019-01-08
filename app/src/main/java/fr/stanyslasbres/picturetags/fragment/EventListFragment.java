@@ -11,7 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import fr.stanyslasbres.picturetags.R;
-import fr.stanyslasbres.picturetags.adapters.EventsAdapter;
+import fr.stanyslasbres.picturetags.adapter.EventsAdapter;
 
 public class EventListFragment extends Fragment {
 

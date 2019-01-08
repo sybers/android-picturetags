@@ -1,4 +1,4 @@
-package fr.stanyslasbres.picturetags.readers;
+package fr.stanyslasbres.picturetags.reader;
 
 import android.content.Context;
 import android.database.Cursor;

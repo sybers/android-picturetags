@@ -1,7 +1,7 @@
 package fr.stanyslasbres.picturetags.persistence.dao;
 
+import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.*;
-import android.net.Uri;
 
 import java.util.List;
 
@@ -20,8 +20,8 @@ public interface PicturesDao {
     void delete(Picture... pictures);
 
     @Query("SELECT * FROM pictures")
-    List<Picture> all();
+    LiveData<List<Picture>> all();
 
     @Query("SELECT * FROM pictures WHERE uri = :uri LIMIT 1")
-    Picture findByUri(String uri);
+    LiveData<Picture> findByUri(String uri);
 }

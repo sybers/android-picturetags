@@ -1,4 +1,4 @@
-package fr.stanyslasbres.picturetags.readers;
+package fr.stanyslasbres.picturetags.reader;
 
 import android.Manifest;
 import android.annotation.SuppressLint;

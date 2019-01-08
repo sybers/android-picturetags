@@ -4,9 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -28,22 +26,18 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import fr.stanyslasbres.picturetags.AsyncTaskResponseListener;
-import fr.stanyslasbres.picturetags.PictureTagsApplication;
+import fr.stanyslasbres.picturetags.persistence.repository.PictureRepository;
 import fr.stanyslasbres.picturetags.R;
-import fr.stanyslasbres.picturetags.adapters.ContactsAdapter;
-import fr.stanyslasbres.picturetags.adapters.EventsAdapter;
+import fr.stanyslasbres.picturetags.adapter.ContactsAdapter;
+import fr.stanyslasbres.picturetags.adapter.EventsAdapter;
 import fr.stanyslasbres.picturetags.fragment.ContactListFragment;
 import fr.stanyslasbres.picturetags.fragment.EventListFragment;
-import fr.stanyslasbres.picturetags.persistence.dao.PicturesDao;
 import fr.stanyslasbres.picturetags.persistence.entities.Picture;
-import fr.stanyslasbres.picturetags.readers.CalendarEventsReader;
-import fr.stanyslasbres.picturetags.readers.ContactsReader;
+import fr.stanyslasbres.picturetags.reader.CalendarEventsReader;
+import fr.stanyslasbres.picturetags.reader.ContactsReader;
 import fr.stanyslasbres.picturetags.viewmodel.ContactViewModel;
-import fr.stanyslasbres.picturetags.viewmodel.EventViewModel;
 
 public final class TagImageActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_READ_CONTACTS = 1;
@@ -51,6 +45,8 @@ public final class TagImageActivity extends AppCompatActivity {
 
     private static final int PICK_EVENT = 0;
     private static final int PICK_CONTACT = 1;
+
+    private PictureRepository pictureRepository = new PictureRepository();
 
     private FloatingActionButton fabPickEvent;
     private FloatingActionButton fabPickContact;
@@ -93,26 +89,24 @@ public final class TagImageActivity extends AppCompatActivity {
         saveButton.setOnClickListener(view -> {
             Picture pic = new Picture(Uri.parse(imageUriString));
             pic.events.addAll(pickedEventsIds);
-
             pic.contacts.addAll(pickedContactsIds);
 
-            SaveImageTask task = new SaveImageTask();
-            task.execute(pic);
+            this.pictureRepository.upsert(pic);
 
             setResult(Activity.RESULT_OK);
             finish();
         });
 
-        // load the image, this is an edit
-        new LoadImageTask(picture -> {
-            if(picture != null) {
-                pickedEventsIds = new HashSet<>(picture.events);
-                loadEvents();
-                pickedContactsIds = new HashSet<>(picture.contacts);
-                loadContacts();
-            }
-        })
-                .execute(Uri.parse(imageUriString));
+        pictureRepository
+                .findById(imageUriString)
+                .observe(this, picture -> {
+                    if(picture != null) {
+                        pickedEventsIds = new HashSet<>(picture.events);
+                        loadEvents();
+                        pickedContactsIds = new HashSet<>(picture.contacts);
+                        loadContacts();
+                    }
+                });
 
         // cancel button
         Button cancelButton = findViewById(R.id.annotated_image_cancel_button);
@@ -204,16 +198,26 @@ public final class TagImageActivity extends AppCompatActivity {
         return ContextCompat.checkSelfPermission(getApplicationContext(), permission) == PackageManager.PERMISSION_GRANTED;
     }
 
+    /**
+     * Loads the events data for the currently selected events.
+     * Does nothing if the permission was not granted...
+     */
     private void loadEvents() {
         if(!hasPermission(Manifest.permission.READ_CALENDAR)) return;
-        List<EventViewModel> events = eventsReader.readEventsWithIds(new ArrayList<>(pickedEventsIds));
-        eventsAdapter.setData(events);
+        eventsAdapter.setData(
+                eventsReader.readEventsWithIds(new ArrayList<>(pickedEventsIds))
+        );
     }
 
+    /**
+     * Loads the contacts data for the currently selected contacts.
+     * Does nothing if the permission was not granted...
+     */
     private void loadContacts() {
         if(!hasPermission(Manifest.permission.READ_CONTACTS)) return;
-        List<ContactViewModel> contacts = contactsReader.readContactsWithIds(new ArrayList<>(pickedContactsIds));
-        contactsAdapter.setData(contacts);
+        contactsAdapter.setData(
+                contactsReader.readContactsWithIds(new ArrayList<>(pickedContactsIds))
+        );
     }
 
     /**
@@ -254,7 +258,7 @@ public final class TagImageActivity extends AppCompatActivity {
         if(resultCode == Activity.RESULT_OK) {
             if(data != null) {
                 long id = data.getLongExtra(EventPickerActivity.EXTRA_SELECTED_EVENT_ID, -1);
-                Toast.makeText(this, "Event added", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.toast_event_added), Toast.LENGTH_SHORT).show();
                 pickedEventsIds.add(id);
 
                 loadEvents();
@@ -273,7 +277,7 @@ public final class TagImageActivity extends AppCompatActivity {
     private void onContactPicked(int resultCode, Intent data) {
         if(resultCode == Activity.RESULT_OK) {
             if(data != null) {
-                Toast.makeText(this, "Contact added", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.toast_contact_added), Toast.LENGTH_SHORT).show();
 
                 ContactViewModel vm = contactsReader.readByUri(data.getData());
                 pickedContactsIds.add(vm.getId());
@@ -293,67 +297,13 @@ public final class TagImageActivity extends AppCompatActivity {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
         alert
-                .setTitle("Wait a minute!")
-                .setMessage("The annotations are not yet saved! are you sure you want to cancel?")
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .setPositiveButton("Yes", (dialog, which) -> finish())
-                .setNegativeButton("No", (dialog, which) -> dialog.cancel());
+                .setTitle(getString(R.string.confirm_unsaved_picture))
+                .setMessage(getString(R.string.confirm_unsaved_picture_hint))
+                .setIcon(R.drawable.ic_warn_black)
+                .setPositiveButton(getString(R.string.yes), (dialog, which) -> finish())
+                .setNegativeButton(getString(R.string.no), (dialog, which) -> dialog.cancel());
 
         alert.show();
-    }
-
-    /**
-     * Load picture details from the database
-     */
-    private static class LoadImageTask extends AsyncTask<Uri, Void, Picture> {
-
-        private AsyncTaskResponseListener<Picture> responseListener;
-
-        LoadImageTask(AsyncTaskResponseListener<Picture> listener) {
-            super();
-            responseListener = listener;
-        }
-
-        @Override
-        protected Picture doInBackground(Uri... uris) {
-            PicturesDao dao = PictureTagsApplication.getDatabase().getPicturesDao();
-            try {
-                return dao.findByUri(uris[0].toString());
-            } catch (Exception e) {
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Picture picture) {
-            super.onPostExecute(picture);
-
-            if(responseListener != null) {
-                responseListener.onAsyncTaskDone(picture);
-            }
-        }
-    }
-
-    /**
-     * Save the current image or update it if it is already in the database
-     */
-    private static class SaveImageTask extends AsyncTask<Picture, Void, Void> {
-
-        SaveImageTask() {
-            super();
-        }
-
-        @Override
-        protected Void doInBackground(Picture... pictures) {
-            PicturesDao dao = PictureTagsApplication.getDatabase().getPicturesDao();
-            try {
-                dao.insert(pictures);
-            } catch(SQLiteConstraintException exception) {
-                dao.update(pictures);
-            }
-
-            return null;
-        }
     }
 
     /**

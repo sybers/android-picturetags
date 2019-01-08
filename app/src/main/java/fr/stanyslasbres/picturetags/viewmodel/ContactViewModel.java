@@ -1,10 +1,5 @@
 package fr.stanyslasbres.picturetags.viewmodel;
 
-import android.net.Uri;
-
-import java.text.DateFormat;
-import java.util.Calendar;
-
 public class ContactViewModel {
     private final long id;
     private String displayName;

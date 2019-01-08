@@ -11,7 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import fr.stanyslasbres.picturetags.R;
-import fr.stanyslasbres.picturetags.adapters.ContactsAdapter;
+import fr.stanyslasbres.picturetags.adapter.ContactsAdapter;
 
 public class ContactListFragment extends Fragment {
 

@@ -43,7 +43,6 @@ public class AppConverters {
 
     @TypeConverter
     public static List<Long> stringToList(String value) {
-        Log.e("SLIP", "VALEUR DU BORDEL \" " + value + "\"");
         if(value == null) return new ArrayList<>();
         Type listType = new TypeToken<ArrayList<Long>>() {}.getType();
         return new Gson().fromJson(value, listType);

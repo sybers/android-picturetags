@@ -3,7 +3,6 @@ package fr.stanyslasbres.picturetags.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import com.github.clans.fab.FloatingActionButton;
 
 import android.support.v7.app.AlertDialog;
@@ -11,16 +10,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.widget.Toast;
 
-import java.util.List;
-
-import fr.stanyslasbres.picturetags.AsyncTaskResponseListener;
 import fr.stanyslasbres.picturetags.R;
-import fr.stanyslasbres.picturetags.PictureTagsApplication;
-import fr.stanyslasbres.picturetags.adapters.PicturesAdapter;
+import fr.stanyslasbres.picturetags.adapter.PicturesAdapter;
 import fr.stanyslasbres.picturetags.persistence.entities.Picture;
+import fr.stanyslasbres.picturetags.persistence.repository.PictureRepository;
 
 /**
  * PicturesListActivity presents the list of annotated pictures and allows the user to pick and annotate a picture
@@ -31,6 +26,8 @@ public final class PicturesListActivity extends AppCompatActivity {
 
     public static final String EXTRA_IMAGE_URI = "fr.stanyslasbres.picturetags.EXTRA_IMAGE_URI";
     private PicturesAdapter adapter;
+
+    private PictureRepository pictureRepository = new PictureRepository();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,12 +41,18 @@ public final class PicturesListActivity extends AppCompatActivity {
         adapter = new PicturesAdapter();
         adapter.setOnItemClickListener((view, position, vm) -> goToAnnotationActivity(vm.uri));
         adapter.setOnItemLongClickListener((view, position, vm) -> deleteAnnotatedPicture(vm));
+
         RecyclerView eventList = findViewById(R.id.pictures_list);
         eventList.setAdapter(adapter);
         eventList.setLayoutManager(new GridLayoutManager(this, 2));
 
         // load pictures
-        new LoadImagesTask(pictures -> adapter.setData(pictures)).execute();
+        // new LoadImagesTask(pictures -> adapter.setData(pictures)).execute();
+        this.pictureRepository.all().observe(this, pictures -> {
+            adapter.setData(pictures);
+        });
+
+
     }
 
     @Override
@@ -94,18 +97,13 @@ public final class PicturesListActivity extends AppCompatActivity {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
         alert
-                .setTitle("Delete this annotated picture?")
-                .setMessage("Are you sure you want to delete this picture?")
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .setPositiveButton("Yes", (dialog, which) -> {
-                    new DeleteImageTask(response -> {
-                        adapter.getData().remove(picture);
-                        adapter.notifyDataSetChanged();
-                        Toast.makeText(this, "Picture deleted", Toast.LENGTH_LONG).show();
-                    })
-                            .execute(picture);
+                .setTitle(getString(R.string.confirm_delete_picture))
+                .setMessage(getString(R.string.confirm_delete_picture_hint))
+                .setIcon(R.drawable.ic_warn_black)
+                .setPositiveButton(getString(R.string.yes), (dialog, which) -> {
+                    new PictureRepository().delete(picture);
                 })
-                .setNegativeButton("No", (dialog, which) -> dialog.cancel());
+                .setNegativeButton(getString(R.string.no), (dialog, which) -> dialog.cancel());
 
         alert.show();
     }
@@ -124,7 +122,7 @@ public final class PicturesListActivity extends AppCompatActivity {
                 // start annotation activity
                 goToAnnotationActivity(data.getData());
             } else {
-                Toast.makeText(this.getApplicationContext(), "Unable to pick the image...", Toast.LENGTH_LONG).show();
+                Toast.makeText(this.getApplicationContext(), getString(R.string.toast_error_pick_picture), Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -135,69 +133,7 @@ public final class PicturesListActivity extends AppCompatActivity {
      * @param data Data from called activity
      */
     private void onImageAnnotated(int resultCode, Intent data) {
-        if(resultCode == Activity.RESULT_OK) {
-            // reload the pictures
-            // TODO : use observable data to avoid this kind of code duplication...
-            new LoadImagesTask(pictures -> adapter.setData(pictures)).execute();
-        }
-    }
-
-    /**
-     * Load the list of images from the local database
-     */
-    private static class LoadImagesTask extends AsyncTask<Void, Void, List<Picture>> {
-
-        private AsyncTaskResponseListener<List<Picture>> responseListener;
-
-        LoadImagesTask(AsyncTaskResponseListener<List<Picture>> listener) {
-            super();
-            this.responseListener = listener;
-        }
-
-        @Override
-        protected List<Picture> doInBackground(Void... params) {
-            return PictureTagsApplication.getDatabase().getPicturesDao().all();
-        }
-
-        @Override
-        protected void onPostExecute(List<Picture> pictures) {
-            super.onPostExecute(pictures);
-
-            if (this.responseListener != null) {
-                this.responseListener.onAsyncTaskDone(pictures);
-            }
-        }
-    }
-
-    /**
-     * delete Pictures from the database
-     */
-    private static class DeleteImageTask extends AsyncTask<Picture, Void, Void> {
-        private AsyncTaskResponseListener<Void> responseListener;
-
-        DeleteImageTask(AsyncTaskResponseListener<Void> listener) {
-            super();
-            this.responseListener = listener;
-        }
-
-        @Override
-        protected Void doInBackground(Picture... picture) {
-            try {
-                PictureTagsApplication.getDatabase().getPicturesDao().delete(picture);
-            } catch(Exception e) {
-                Log.e("PicturesListActivity", "Unable to delete the picture from room database...");
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void params) {
-            super.onPostExecute(params);
-
-            if (this.responseListener != null) {
-                this.responseListener.onAsyncTaskDone(params);
-            }
-        }
+        // Perform actions after an image was annotated
+        // ...
     }
 }

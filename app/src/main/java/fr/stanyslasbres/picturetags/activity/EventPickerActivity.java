@@ -16,8 +16,8 @@ import android.widget.CalendarView;
 import java.util.Calendar;
 
 import fr.stanyslasbres.picturetags.R;
-import fr.stanyslasbres.picturetags.readers.CalendarEventsReader;
-import fr.stanyslasbres.picturetags.adapters.EventsAdapter;
+import fr.stanyslasbres.picturetags.reader.CalendarEventsReader;
+import fr.stanyslasbres.picturetags.adapter.EventsAdapter;
 
 /**
  * Allows to pick an event from the calendar and returns the information about it

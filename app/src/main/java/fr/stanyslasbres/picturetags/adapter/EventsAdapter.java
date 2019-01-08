@@ -1,4 +1,4 @@
-package fr.stanyslasbres.picturetags.adapters;
+package fr.stanyslasbres.picturetags.adapter;
 
 import android.graphics.drawable.GradientDrawable;
 import android.support.annotation.NonNull;

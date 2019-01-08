@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">PictureTags</string>
+
+    <string name="yes">Oui</string>
+    <string name="no">Non</string>
+
+    <string name="save">Enregistrer</string>
+    <string name="cancel">Annuler</string>
+
+    <string name="contacts">Contacts</string>
+    <string name="events">Événements</string>
+
+    <string name="select_contact">Sélectionner un contact</string>
+    <string name="select_event">Sélectionner un événement</string>
+
+    <string name="annotated_image_content_description">Image annotée</string>
+
+    <string name="confirm_delete_picture">Supprimer cette image annotée ?</string>
+    <string name="confirm_delete_picture_hint">Êtes-vous sûr de vouloir supprimer cette image ?</string>
+
+    <string name="confirm_unsaved_picture">Attendez !</string>
+    <string name="confirm_unsaved_picture_hint">Les modifications ne sont pas sauvegardées ! Voulez-vous vraiment quitter ?</string>
+
+    <string name="toast_event_added">Événements ajouté</string>
+    <string name="toast_contact_added">Contact ajouté</string>
+    <string name="toast_error_pick_picture">Impossible de sélectionner l\'image…</string>
+</resources>

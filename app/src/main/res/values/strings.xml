@@ -1,12 +1,27 @@
 <resources>
     <string name="app_name">PictureTags</string>
 
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+
     <string name="contacts">Contacts</string>
     <string name="events">Events</string>
 
-    <string name="select_image">Select an image</string>
     <string name="select_contact">Select a contact</string>
     <string name="select_event">Select an event</string>
 
     <string name="annotated_image_content_description">Annotated Image</string>
+
+    <string name="confirm_delete_picture">Delete this annotated picture?</string>
+    <string name="confirm_delete_picture_hint">Are you sure you want to delete this picture?</string>
+
+    <string name="confirm_unsaved_picture">Wait a minute!</string>
+    <string name="confirm_unsaved_picture_hint">The annotations are not yet saved! Are you sure you want to cancel?</string>
+
+    <string name="toast_event_added">Event added</string>
+    <string name="toast_contact_added">Contact added</string>
+    <string name="toast_error_pick_picture">Unable to pick the picture…</string>
 </resources>

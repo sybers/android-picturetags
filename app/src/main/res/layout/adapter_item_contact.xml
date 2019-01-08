@@ -9,7 +9,7 @@
     android:layout_marginEnd="8dp"
     android:elevation="2dp"
     android:padding="8dp"
-    android:background="@drawable/adapter_item_event_bg">
+    android:background="@drawable/adapter_item_contact_bg">
 
     <TextView
         android:id="@+id/contact_display_name"
