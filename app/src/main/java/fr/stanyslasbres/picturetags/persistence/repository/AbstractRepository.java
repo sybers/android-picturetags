@@ -4,6 +4,7 @@ import android.arch.lifecycle.LiveData;
 
 import java.util.List;
 
+@SuppressWarnings("unchecked")
 abstract public class AbstractRepository<T, U> {
     abstract public void insert(T... objects);
 

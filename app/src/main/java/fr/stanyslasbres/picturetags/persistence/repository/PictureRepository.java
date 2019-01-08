@@ -16,16 +16,12 @@ public class PictureRepository extends AbstractRepository<Picture, String> {
 
     @Override
     public void insert(Picture... objects) {
-        new SimpleAsyncTask(() -> {
-            picturesDao.insert(objects);
-        }).execute();
+        new SimpleAsyncTask(() -> picturesDao.insert(objects)).execute();
     }
 
     @Override
     public void update(Picture... objects) {
-        new SimpleAsyncTask(() -> {
-            picturesDao.update(objects);
-        }).execute();
+        new SimpleAsyncTask(() -> picturesDao.update(objects)).execute();
     }
 
     public void upsert(Picture... objects) {
@@ -40,9 +36,7 @@ public class PictureRepository extends AbstractRepository<Picture, String> {
 
     @Override
     public void delete(Picture... objects) {
-        new SimpleAsyncTask(() -> {
-            picturesDao.delete(objects);
-        }).execute();
+        new SimpleAsyncTask(() -> picturesDao.delete(objects)).execute();
     }
 
     @Override

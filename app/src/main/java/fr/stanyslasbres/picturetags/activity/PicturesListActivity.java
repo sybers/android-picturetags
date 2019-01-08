@@ -48,9 +48,7 @@ public final class PicturesListActivity extends AppCompatActivity {
 
         // load pictures
         // new LoadImagesTask(pictures -> adapter.setData(pictures)).execute();
-        this.pictureRepository.all().observe(this, pictures -> {
-            adapter.setData(pictures);
-        });
+        this.pictureRepository.all().observe(this, pictures -> adapter.setData(pictures));
 
 
     }
@@ -100,9 +98,7 @@ public final class PicturesListActivity extends AppCompatActivity {
                 .setTitle(getString(R.string.confirm_delete_picture))
                 .setMessage(getString(R.string.confirm_delete_picture_hint))
                 .setIcon(R.drawable.ic_warn_black)
-                .setPositiveButton(getString(R.string.yes), (dialog, which) -> {
-                    new PictureRepository().delete(picture);
-                })
+                .setPositiveButton(getString(R.string.yes), (dialog, which) -> new PictureRepository().delete(picture))
                 .setNegativeButton(getString(R.string.no), (dialog, which) -> dialog.cancel());
 
         alert.show();
@@ -132,6 +128,7 @@ public final class PicturesListActivity extends AppCompatActivity {
      * @param resultCode Activity result code
      * @param data Data from called activity
      */
+    @SuppressWarnings("EmptyMethod")
     private void onImageAnnotated(int resultCode, Intent data) {
         // Perform actions after an image was annotated
         // ...

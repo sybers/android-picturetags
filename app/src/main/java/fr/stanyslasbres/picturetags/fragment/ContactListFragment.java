@@ -44,9 +44,4 @@ public class ContactListFragment extends Fragment {
 
         return v;
     }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-    }
 }

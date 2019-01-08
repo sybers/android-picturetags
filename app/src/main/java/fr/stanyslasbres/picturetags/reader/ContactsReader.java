@@ -28,7 +28,7 @@ public class ContactsReader {
 
     /**
      * Read the contacts with the given Ids
-     * @param contactsIds ids of the contacts to retreive
+     * @param contactsIds ids of the contacts to retrieve
      * @return List of found contacts
      */
     public List<ContactViewModel> readContactsWithIds(List<Long> contactsIds) {
@@ -51,7 +51,7 @@ public class ContactsReader {
     /**
      * Find contact information by it's URI
      * @param uri uri of the contact
-     * @return contact informations
+     * @return contact information
      */
     public ContactViewModel readByUri(Uri uri) {
         if (uri == null) {

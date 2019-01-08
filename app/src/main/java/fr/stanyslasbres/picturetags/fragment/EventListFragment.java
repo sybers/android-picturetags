@@ -42,9 +42,4 @@ public class EventListFragment extends Fragment {
 
         return v;
     }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-    }
 }

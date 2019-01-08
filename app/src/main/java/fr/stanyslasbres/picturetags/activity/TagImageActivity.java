@@ -78,11 +78,9 @@ public final class TagImageActivity extends AppCompatActivity {
                 .into(annotatedPictureImageView);
 
         // change scale type on image click (to view the full image)
-        annotatedPictureImageView.setOnClickListener(view -> {
-            annotatedPictureImageView.setScaleType(annotatedPictureImageView.getScaleType() == ImageView.ScaleType.CENTER_CROP
-                    ? ImageView.ScaleType.CENTER_INSIDE
-                    : ImageView.ScaleType.CENTER_CROP);
-        });
+        annotatedPictureImageView.setOnClickListener(view -> annotatedPictureImageView.setScaleType(annotatedPictureImageView.getScaleType() == ImageView.ScaleType.CENTER_CROP
+                ? ImageView.ScaleType.CENTER_INSIDE
+                : ImageView.ScaleType.CENTER_CROP));
 
         // save button
         Button saveButton = findViewById(R.id.annotated_image_save_button);
@@ -174,14 +172,14 @@ public final class TagImageActivity extends AppCompatActivity {
         switch (requestCode) {
             case PERMISSION_REQUEST_READ_CALENDAR: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // loadEvents();
+                    loadEvents();
                 } else {
                     fabPickEvent.setVisibility(View.GONE);
                 }
             }
             case PERMISSION_REQUEST_READ_CONTACTS: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // loadContacts();
+                    loadContacts();
                 } else {
                     fabPickContact.setVisibility(View.GONE);
                 }

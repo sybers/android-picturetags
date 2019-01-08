@@ -2,7 +2,6 @@ package fr.stanyslasbres.picturetags.persistence;
 
 import android.arch.persistence.room.TypeConverter;
 import android.net.Uri;
-import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -17,7 +16,7 @@ import java.util.List;
  */
 public class AppConverters {
     @TypeConverter
-    public static Date TimestamptoDate(Long value) {
+    public static Date TimestampToDate(Long value) {
         return value == null ? null : new Date(value);
     }
 
