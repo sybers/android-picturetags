@@ -256,7 +256,7 @@ public final class TagImageActivity extends AppCompatActivity {
         if(resultCode == Activity.RESULT_OK) {
             if(data != null) {
                 long id = data.getLongExtra(EventPickerActivity.EXTRA_SELECTED_EVENT_ID, -1);
-                Toast.makeText(this, getString(R.string.toast_event_added), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.toast_event_added, Toast.LENGTH_SHORT).show();
                 pickedEventsIds.add(id);
 
                 loadEvents();
@@ -275,7 +275,7 @@ public final class TagImageActivity extends AppCompatActivity {
     private void onContactPicked(int resultCode, Intent data) {
         if(resultCode == Activity.RESULT_OK) {
             if(data != null) {
-                Toast.makeText(this, getString(R.string.toast_contact_added), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.toast_contact_added, Toast.LENGTH_SHORT).show();
 
                 ContactViewModel vm = contactsReader.readByUri(data.getData());
                 pickedContactsIds.add(vm.getId());
@@ -295,11 +295,11 @@ public final class TagImageActivity extends AppCompatActivity {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
         alert
-                .setTitle(getString(R.string.confirm_unsaved_picture))
-                .setMessage(getString(R.string.confirm_unsaved_picture_hint))
+                .setTitle(R.string.confirm_unsaved_picture)
+                .setMessage(R.string.confirm_unsaved_picture_hint)
                 .setIcon(R.drawable.ic_warn_black)
-                .setPositiveButton(getString(R.string.yes), (dialog, which) -> finish())
-                .setNegativeButton(getString(R.string.no), (dialog, which) -> dialog.cancel());
+                .setPositiveButton(R.string.yes, (dialog, which) -> finish())
+                .setNegativeButton(R.string.no, (dialog, which) -> dialog.cancel());
 
         alert.show();
     }

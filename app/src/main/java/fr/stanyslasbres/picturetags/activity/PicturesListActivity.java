@@ -95,11 +95,11 @@ public final class PicturesListActivity extends AppCompatActivity {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
         alert
-                .setTitle(getString(R.string.confirm_delete_picture))
-                .setMessage(getString(R.string.confirm_delete_picture_hint))
+                .setTitle(R.string.confirm_delete_picture)
+                .setMessage(R.string.confirm_delete_picture_hint)
                 .setIcon(R.drawable.ic_warn_black)
-                .setPositiveButton(getString(R.string.yes), (dialog, which) -> new PictureRepository().delete(picture))
-                .setNegativeButton(getString(R.string.no), (dialog, which) -> dialog.cancel());
+                .setPositiveButton(R.string.yes, (dialog, which) -> new PictureRepository().delete(picture))
+                .setNegativeButton(R.string.no, (dialog, which) -> dialog.cancel());
 
         alert.show();
     }
@@ -118,7 +118,7 @@ public final class PicturesListActivity extends AppCompatActivity {
                 // start annotation activity
                 goToAnnotationActivity(data.getData());
             } else {
-                Toast.makeText(this.getApplicationContext(), getString(R.string.toast_error_pick_picture), Toast.LENGTH_LONG).show();
+                Toast.makeText(this.getApplicationContext(), R.string.toast_error_pick_picture, Toast.LENGTH_LONG).show();
             }
         }
     }
