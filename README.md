@@ -4,16 +4,16 @@
 
 ## Subject
 
-This application was designed and developed to familiarize with native Android development. It uses Room database, Picasso and Gson.
+This application was designed and developed to familiarize myself with native Android development. It uses Room database, Picasso and Gson.
 
-With this application, you can select an image from you device and annotate it with events or contacts.
+With this app, you can select an image from you device and annotate it with events or contacts. And that's it!
 
 ## Possible improvements
 
-  - Add GPS location to a picture.
-  - Add text description to a picture.
-  - Filter pictures by events/contacts/location/etc.
-  - Batch delete.
+  - [ ] Add GPS location to a picture.
+  - [ ] Add text description to a picture.
+  - [ ] Filter pictures by events/contacts/location/etc.
+  - [ ] Batch delete.
 
 ## Compatibility
 
