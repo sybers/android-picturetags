@@ -49,8 +49,6 @@ public final class PicturesListActivity extends AppCompatActivity {
         // load pictures
         // new LoadImagesTask(pictures -> adapter.setData(pictures)).execute();
         this.pictureRepository.all().observe(this, pictures -> adapter.setData(pictures));
-
-
     }
 
     @Override
@@ -110,16 +108,18 @@ public final class PicturesListActivity extends AppCompatActivity {
      * @param data Data containing the picked image URI
      */
     private void onImageToAnnotatePicked(int resultCode, Intent data) {
-        if(resultCode == Activity.RESULT_OK) {
-            if(data != null && data.getData() != null) {
-                // ask the content resolver to keep permission to read this Uri across device reboots
-                getContentResolver().takePersistableUriPermission(data.getData(), Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        if(resultCode != Activity.RESULT_OK) {
+            return;
+        }
+        
+        if(data != null && data.getData() != null) {
+            // ask the content resolver to keep permission to read this Uri across device reboots
+            getContentResolver().takePersistableUriPermission(data.getData(), Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-                // start annotation activity
-                goToAnnotationActivity(data.getData());
-            } else {
-                Toast.makeText(this.getApplicationContext(), R.string.toast_error_pick_picture, Toast.LENGTH_LONG).show();
-            }
+            // start annotation activity
+            goToAnnotationActivity(data.getData());
+        } else {
+            Toast.makeText(this.getApplicationContext(), R.string.toast_error_pick_picture, Toast.LENGTH_LONG).show();
         }
     }
 
